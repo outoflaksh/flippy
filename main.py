@@ -7,9 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def get_product_name(PRODUCT_URL: str):
-    PRODUCT_NAME_CLASS = "col-9-12"
-
+def get_product_details(PRODUCT_URL: str):
     try:
         response = requests.get(url=PRODUCT_URL)
     except:
@@ -19,9 +17,17 @@ def get_product_name(PRODUCT_URL: str):
         print(f"Request hit successful on url: {PRODUCT_URL[:30]}...\n")
 
         soup = BeautifulSoup(response.content, "html.parser")
-        product_name = soup.find_all("td", {"class": PRODUCT_NAME_CLASS})[2]
+        product_name = soup.find("span", {"class": "B_NuCI"}).text
+        product_img = soup.find("img", {"class": "_396cs4"})["src"]
+        product_price = soup.find("div", {"class": "_30jeq3 _16Jk6d"}).text
+        search_q = soup.find_all("td", {"class": "col-9-12"})[2].text
 
-        return product_name.text
+        return {
+            "name": product_name,
+            "img": product_img,
+            "price": product_price,
+            "search_term": search_q,
+        }
     else:
         raise Exception("Unsuccessful request hit: " + response.status_code)
 
@@ -90,27 +96,27 @@ PRODUCT_URLS = [
 ]
 
 PRODUCT_URL = "https://www.flipkart.com/apple-iphone-13-pro-max-alpine-green-512-gb/p/itme5529c8267abe?pid=MOBGC9VGHZAHZH6H&lid=LSTMOBGC9VGHZAHZH6HCLMPD7&marketplace=FLIPKART&fm=personalisedRecommendation%2Fp2p-same&iid=R%3As%3Bp%3AMOBGDWFEAHHTW8CF%3Bpt%3Ahp%3Buid%3A40eb2592-0f0c-11ed-a8d9-517e9f364fe2%3B.MOBGC9VGHZAHZH6H&ppt=pp&ppn=pp&ssid=l7xvib0jtoje7eo01659077609209&otracker=hp_reco_You%2BMay%2BLike..._5_7.productCard.PMU_V2_APPLE%2BiPhone%2B13%2BPro%2BMax%2B%2528Alpine%2BGreen%252C%2B512%2BGB%2529_MOBGC9VGHZAHZH6H_personalisedRecommendation%2Fp2p-same_4&otracker1=hp_reco_WHITELISTED_personalisedRecommendation%2Fp2p-same_You%2BMay%2BLike..._DESKTOP_HORIZONTAL_productCard_cc_5_NA_view-all&cid=MOBGC9VGHZAHZH6H"
+print(get_product_details(PRODUCT_URL))
+# prod_name = get_product_name(PRODUCT_URL)
 
-prod_name = get_product_name(PRODUCT_URL)
+# print("Scraped product name:", " ".join(prod_name.split(" ")[:3]))
 
-print("Scraped product name:", " ".join(prod_name.split(" ")[:3]))
+# tweets = get_tweets(prod_name)
 
-tweets = get_tweets(prod_name)
+# print("Tweets scraped")
+# score = 0
 
-print("Tweets scraped")
-score = 0
+# grades = {"negative": 0, "neutral": 0, "positive": 0}
 
-grades = {"negative": 0, "neutral": 0, "positive": 0}
+# print("Running analysis...")
+# for t in tweets[:15]:
+#     sent = analyze_sentiment(t)
+#     grades[sent] += 1
 
-print("Running analysis...")
-for t in tweets[:15]:
-    sent = analyze_sentiment(t)
-    grades[sent] += 1
+# print("Score: ", grades)
 
-print("Score: ", grades)
-
-max_score = max(grades.values())
-print("Net result:")
-for i in grades:
-    if grades[i] == max_score:
-        print(i)
+# max_score = max(grades.values())
+# print("Net result:")
+# for i in grades:
+#     if grades[i] == max_score:
+#         print(i)
