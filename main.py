@@ -6,6 +6,31 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.get("/details")
+def product_details(prod_url: str):
+    return get_product_details(prod_url)
+
+
+@app.get("/analyse")
+def analysis(q: str):
+    return get_analysis(q)
+
 
 def get_product_details(PRODUCT_URL: str):
     try:
@@ -95,28 +120,37 @@ PRODUCT_URLS = [
     "https://www.flipkart.com/google-pixel-6a-charcoal-128-gb/p/itme5ae89135d44e?pid=MOBGFKX5YUXD74Z3&lid=LSTMOBGFKX5YUXD74Z3MXA2OB",
 ]
 
-PRODUCT_URL = "https://www.flipkart.com/apple-iphone-13-pro-max-alpine-green-512-gb/p/itme5529c8267abe?pid=MOBGC9VGHZAHZH6H&lid=LSTMOBGC9VGHZAHZH6HCLMPD7&marketplace=FLIPKART&fm=personalisedRecommendation%2Fp2p-same&iid=R%3As%3Bp%3AMOBGDWFEAHHTW8CF%3Bpt%3Ahp%3Buid%3A40eb2592-0f0c-11ed-a8d9-517e9f364fe2%3B.MOBGC9VGHZAHZH6H&ppt=pp&ppn=pp&ssid=l7xvib0jtoje7eo01659077609209&otracker=hp_reco_You%2BMay%2BLike..._5_7.productCard.PMU_V2_APPLE%2BiPhone%2B13%2BPro%2BMax%2B%2528Alpine%2BGreen%252C%2B512%2BGB%2529_MOBGC9VGHZAHZH6H_personalisedRecommendation%2Fp2p-same_4&otracker1=hp_reco_WHITELISTED_personalisedRecommendation%2Fp2p-same_You%2BMay%2BLike..._DESKTOP_HORIZONTAL_productCard_cc_5_NA_view-all&cid=MOBGC9VGHZAHZH6H"
-print(get_product_details(PRODUCT_URL))
-# prod_name = get_product_name(PRODUCT_URL)
 
-# print("Scraped product name:", " ".join(prod_name.split(" ")[:3]))
+def get_analysis(prod_name):
+    prod_name = " ".join(prod_name.split(" ")[:3])
+    print("Scraped product name:", prod_name)
 
-# tweets = get_tweets(prod_name)
+    tweets = get_tweets(prod_name)
 
-# print("Tweets scraped")
-# score = 0
+    print("Tweets scraped")
+    score = 0
 
-# grades = {"negative": 0, "neutral": 0, "positive": 0}
+    grades = {"negative": 1, "neutral": 3, "positive": 5}
+    breakdown = {"negative": 0, "neutral": 0, "positive": 0}
 
-# print("Running analysis...")
-# for t in tweets[:15]:
-#     sent = analyze_sentiment(t)
-#     grades[sent] += 1
+    print("Running analysis...")
+    for t in tweets:
+        sent = analyze_sentiment(t)
+        breakdown[sent] += 1
+        score += grades[sent]
 
-# print("Score: ", grades)
+    max_score = max(breakdown.values())
+    net_sent = []
+    for i in breakdown:
+        if breakdown[i] == max_score:
+            net_sent.append(i)
 
-# max_score = max(grades.values())
-# print("Net result:")
-# for i in grades:
-#     if grades[i] == max_score:
-#         print(i)
+    score = round(10 * (score / (5 * len(tweets))), 1)
+
+    return {
+        "total_tweets": len(tweets),
+        "breakdown": breakdown,
+        "net_result": net_sent,
+        "score": score,
+    }
+
