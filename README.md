@@ -6,7 +6,7 @@ Submitted for Flipkart GRID 4.0 (2022).
 
 ### Screenshot
 
-<img src="./static/main-ss.png" alt="Main page screenshot" height=600 width=auto />
+<img src="./static/main-ss.png" alt="Main page screenshot" />
 
 ### Built with
 
